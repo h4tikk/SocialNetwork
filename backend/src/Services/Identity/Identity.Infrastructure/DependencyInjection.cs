@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using SocialNetwork.Identity.Infrastructure.Identity;
 using SocialNetwork.Identity.Infrastructure.Persistence;
 
@@ -10,7 +12,8 @@ namespace SocialNetwork.Identity.Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddIdentityInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddIdentityInfrastructure(this IServiceCollection services, 
+        IConfiguration configuration, IHostEnvironment environment)
     {
         var connectionString = configuration.GetConnectionString("IdentityDb") 
             ?? throw new InvalidOperationException("Invalid connection string");
@@ -38,7 +41,21 @@ public static class DependencyInjection
             opt.Cookie.HttpOnly = true;
             opt.Cookie.SecurePolicy = CookieSecurePolicy.Always;
             opt.Cookie.SameSite = SameSiteMode.Lax;
+            opt.SlidingExpiration = true;
+            opt.ExpireTimeSpan = TimeSpan.FromHours(8);
         });
+
+        if(!environment.IsDevelopment())
+        {
+            var keysPath = configuration["Data Protection:KeysPath"]
+                ?? "var/lib/social-identity/data-protection-keys";
+
+            Directory.CreateDirectory(keysPath);
+
+            services.AddDataProtection()
+                .PersistKeysToFileSystem(new DirectoryInfo(keysPath))
+                .SetApplicationName("social-identity");
+        }
 
         return services;
     }
