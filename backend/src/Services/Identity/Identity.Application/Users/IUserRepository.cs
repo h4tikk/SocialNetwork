@@ -10,7 +10,7 @@ public interface IUserRepository
     Task<UserAccount?> VerifyPasswordAsync(string email, string password, CancellationToken cancellationToken);
     Task<AppResult> ConfirmEmailAsync(string userId, string code, CancellationToken cancellationToken);
     Task<string?> GenerateEmailConfirmationTokenAsync(string userId, CancellationToken cancellationToken);
-    Task<string?> GeneratePasswordResetTokenAsync(string password, CancellationToken cancellationToken);
+    Task<string?> GeneratePasswordResetTokenAsync(string email, CancellationToken cancellationToken);
     Task<bool> IsEmailConfirmedAsync(string email, CancellationToken cancellationToken);
     Task<AppResult> ResetPasswordAsync(string userId, string code, string newPassword, CancellationToken cancellationToken);
     Task MarkAsLoginAsync(string userId, CancellationToken cancellationToken);
